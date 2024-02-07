@@ -76,13 +76,12 @@ from typing import Set
     This problem, however, does not produce ALL possible combinations because adjacent 
     houses (choices) cannot be considered.
     
-    Time = Somewhere beterrn O(2**(n/2)) and O(2**n).
+    Time = Somewhere between O(2**(n/2)) and O(2**n).
             The algorithm is exponential and dependent on 'n'.  It will certainly run
             in less time than O(2**n) because a level of the decision tree is omitted
             by 'i + 2' passed to '__helper()' and it will certainly run in more time
             than O(2**(n/2)).  I'm not sure exactly how to calculate the precise base
             since '2' (in 2**n) is too large.
-
 
     Space = O(n/2) => O(n)  [call stack]
 """
