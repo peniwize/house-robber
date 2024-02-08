@@ -136,10 +136,139 @@ class Solution2_BruteForceDP:
 """
     Dynamic programming solution.
 
-    This is similar to the Fibonacci DP solution.
-    Start with the last two elements and work your way backward to the 
-    first element (in nums).  For each element in nums, calculate a sum
-    value in a sum array.  The sum values are calculated with the formula:
+    Time = O(n - 2) => O(n)
+
+    Space = O(n)
+"""
+class Solution3_OptimizedDP:
+    def rob(self, nums: List[int]) -> int:
+        if not nums: return 0
+        
+        N = len(nums)
+        
+        if 0 == N: return 0
+        if 1 == N: return nums[0]
+        if 2 == N: return max(nums[0], nums[1])
+
+        A = nums
+        S = [0] * N
+        S[N - 1] = A[N - 1]
+        S[N - 2] = A[N - 2]
+        S[N - 3] = A[N - 3] + A[N - 1]
+        for i in range(N - 4, -1, -1):
+            S[i] = A[i] + max(S[i + 2], S[i + 3])
+
+        return max(S[0], S[1])
+
+"""
+    This problem is solved by calculating every combination of houses that
+    does not have any adjacent houses.  For example, consider a street with
+    seven houses: {a,b,c,d,e,f,g}.  The decision tree that produces all
+    combinations of these houses is:
+
+                         $
+                         |
+    +----------------------------------------------------+
+    |                    |                               |
+    ∅                    a                               b
+                         |                               |
+       +------+----------+-------+---+---+       +-------+---+---+
+       |      |          |       |   |   |       |       |   |   |
+       ∅      c          d       e   f   g       d       e   f   g
+              |          |       |               |       |
+          +--------+  +-----+  +---+          +-----+  +---+
+          |  |  |  |  |  |  |  |   |          |  |  |  |   |
+          ∅  e  f  g  ∅  f  g  ∅   g          ∅  f  g  ∅   g
+             |
+           +---+
+           |   |
+           ∅   g
+    
+    NOTE: '∅' denotes no choice or "nothing".
+
+    Notice that sub-trees 'a' and 'b' both contain all other sub-trees and,
+    similarly, all sub-trees are composites that contain all other sub-trees
+    all the way to the base cases: 'f' and 'g'.
+    The reason why onlt sub-trees 'a' and 'b' are modeled is because this 
+    combination algorithm skips adjacent elements (houses) and both trees 
+    must be modeled to show ALL nodes since neither tree 'a' nor tree 'b' 
+    contains the other.
+    Here are all combinations that are produced by these decision trees:
+
+    {a b c d e f g}
+    ---------------
+    ∅
+    a
+    a    c
+    a    c   e
+    a    c   e   g
+    a    c     f
+    a    c       g
+    a      d   f
+    a      d     g
+    a        e
+    a        e   g
+    a          f
+    a            g
+    a        e
+    a        e   g
+    a          f
+    a            g
+    a          f
+    a            g
+      b
+      b    d
+      b    d   f
+      b    d     g
+      b      e
+      b      e   g
+      b        f
+      b          g
+        c
+        c    e
+        c    e   g
+        c      f
+        c        g
+          d
+          d    f
+          d      g
+            e
+            e    g
+              f
+                 g
+
+    Note that every single combination can be found as a branch in the 
+    decision tree and every branch in the decision tree has a corresponding
+    combination.
+
+    To solve this problem, the "max" value of each node must be calculated.
+    The "max" value of a node is the node value + the max value of all of 
+    the nodes children.  For example, the "max" value of any node is:
+        max_node = node_value + max(max_node for all children)
+    Which is recursive a recursive function that returns the "max" value of
+    a node to its parent node that adds it's value to this max value, which
+    produces the max value of the parent node, which it returns to its parent.
+    This continues until the root node is reached.  The answer to the problem
+    is the max value of the max values of 'a' and 'b'.
+
+    ((( Dynamic programming solution. )))
+
+    This solution uses only three variables to record/track sums 
+    rather than an array that records/tracks all sums.
+    (This solution is similar to the Fibonacci DP solution.)
+
+    Start with the last three elements and work your way backward to the 
+    first element (in nums).  For each element in nums (each element 
+    represents a node in the decision tree), calculate the MAX value of the 
+    decision tree NODE as the sum of the node value and the max of all child 
+    node MAX values.  Note that the SUM of each node and its children is not 
+    what is being calculated!
+
+    
+>>> Under Construction <<<
+
+
+    .  The sum values are calculated with the formula:
         S[i] = max(A[i] + S[i + 2], S[i + 1])
         where: A = nums array, S = sums array.
     The final result is S[0].
@@ -157,23 +286,28 @@ class Solution2_BruteForceDP:
         where: A = nums array.
     The final result is in variable 'a'.
 
-    Time = O(n - 2) => O(n)
+    Time = O(n)
 
     Space = O(1)
 """
-class Solution3_OptimizedDP:
-    def rob(self, nums: List[int]) -> int:
-        if not nums: return 0
-        N = len(nums)
+class Solution4_OptimizedDP:
+    def rob(self, A: List[int]) -> int:
+        if not A: return 0
+        
+        N = len(A)
+        
         if 0 == N: return 0
-        if 1 == N: return nums[0]
-        if 2 == N: return max(nums[0], nums[1])
-        a = nums[N - 2]
-        b = nums[N - 1]
-        for i in range(N - 3, -1, -1):
-            b = max(nums[i] + b, a)
-            a, b = b, a
-        return a
+        if 1 == N: return A[0]
+        if 2 == N: return max(A[0], A[1])
+
+        c = A[N - 1]
+        b = A[N - 2]
+        a = A[N - 3] + c
+        for i in range(N - 4, -1, -1):
+            c = A[i] + max(b, c) # Use 'c' as tmp storage.
+            a,b,c = c,a,b
+
+        return max(a, b)
 
 def test1(solution):
     nums = [1,2,3,1]
@@ -247,37 +381,59 @@ def test102(solution):
     print("{}:{}({:.6f} sec) result = {}".format(inspect.currentframe().f_code.co_name, type(solution), endTime - startTime, result))
     assert(expected == result)
 
+def test103(solution):
+    nums = [1,2,3]
+    expected = 4
+    startTime = time.time()
+    result = solution.rob(nums)
+    endTime = time.time()
+    print("{}:{}({:.6f} sec) result = {}".format(inspect.currentframe().f_code.co_name, type(solution), endTime - startTime, result))
+    assert(expected == result)
+
 if "__main__" == __name__:
     test1(Solution1_BruteForce())
     test1(Solution2_BruteForceDP())
-#    test1(Solution3_OptimizedDP())
+    test1(Solution3_OptimizedDP())
+    test1(Solution4_OptimizedDP())
 
     test2(Solution1_BruteForce())
     test2(Solution2_BruteForceDP())
-#    test2(Solution3_OptimizedDP())
+    test2(Solution3_OptimizedDP())
+    test2(Solution4_OptimizedDP())
 
     #test3(Solution1_BruteForce())
     test3(Solution2_BruteForceDP())
-#    test3(Solution3_OptimizedDP())
+    test3(Solution3_OptimizedDP())
+    test3(Solution4_OptimizedDP())
 
     test4(Solution1_BruteForce())
     test4(Solution2_BruteForceDP())
-#    test4(Solution3_OptimizedDP())
+    test4(Solution3_OptimizedDP())
+    test4(Solution4_OptimizedDP())
 
     test5(Solution1_BruteForce())
     test5(Solution2_BruteForceDP())
-#    test5(Solution3_OptimizedDP())
+    test5(Solution3_OptimizedDP())
+    test5(Solution4_OptimizedDP())
 
     test100(Solution1_BruteForce())
     test100(Solution2_BruteForceDP())
-#    test100(Solution3_OptimizedDP())
+    test100(Solution3_OptimizedDP())
+    test100(Solution4_OptimizedDP())
 
     test101(Solution1_BruteForce())
     test101(Solution2_BruteForceDP())
-#    test101(Solution3_OptimizedDP())
+    test101(Solution3_OptimizedDP())
+    test101(Solution4_OptimizedDP())
 
     test102(Solution1_BruteForce())
     test102(Solution2_BruteForceDP())
-#    test102(Solution3_OptimizedDP())
+    test102(Solution3_OptimizedDP())
+    test102(Solution4_OptimizedDP())
+
+    test103(Solution1_BruteForce())
+    test103(Solution2_BruteForceDP())
+    test103(Solution3_OptimizedDP())
+    test103(Solution4_OptimizedDP())
 
 # End of "solution.py".
