@@ -288,7 +288,7 @@ class Solution4_OptimizedDP:
         return max(a, b)
 
 """
-    Simplified iterative [dynamic programming] solution.
+    Simplified iterative DP solution (THREE variables).
 
     This is equivalent to the iterative solution that simulates the return path
     of the recursive solution, except that this solution works FORWARD instead 
@@ -309,6 +309,90 @@ class Solution5_OptimizedDP:
         for n in A:
             a, b, c = n + max(b, c), a, b
         return max(a, b)
+
+"""
+    Simplified iterative DP solution (TWO variables).
+
+    See 'Solution5_OptimizedDP' for more explanation and context.
+
+    An alternative way of looking at the problem is to only consider the 
+    house to rob (at 'i') and the previous two: 'i - 1' and 'i - 2'.  All house
+    combinations leading up to 'i - 1' and 'i - 2' will be reflected in the
+    max values computed for those indexes.  Therefore only 'i - 1' and 'i - 2'
+    must be considered (similar to the Fibonacci algorithm).  This reduces the
+    number of variables from three to two.
+
+    p1, p2 = 0, 0
+    for n in nums:
+        tmp = max(p2 + n, p1)
+        p2 = p1
+        p1 = tmp
+    return p1
+    
+    'p1' is the previous [adjacent] house to 'n'.
+    'p2' is the house before that (two houses away from 'n').
+    The idea is that if you chose to rob 'n' then you would have also robed 'p2',
+    because they're not adjacent, so you add the value of the haul from robbing
+    house 'p2' to 'n'.  Whether or not to rob p1 or p2 depends on which robbery
+    will produce the largest haul (decided by the max() function).  'p1' and 
+    'p2' EACH INCLUDE THE MAXIMUM POSSIBLE HAUL FROM _ALL_ COMBINATIONS OF 
+    ROBBERIES THAT LED TO EACH OF THEM.  Consider the following set of all 
+    combinations that come from seven houses: {a, b, c, d, e, f, g}.
+    Starting with the first house 'a':
+    
+       {a b c d e f g}
+       ---------------
+     0: ∅  (skipped by this algorithm; no sense in robbing no houses)
+     1: a
+     2: a   c
+     3: a   c   e
+     4: a   c   e   g
+
+    The next combination removes 'e' and resumes with 'f', then 'g'.
+
+     5: a   c     f
+     6: a   c       g
+
+    The next combination removes 'c' and resumes with 'g'.
+    Note that the house combinations that start with 'a' include ALL 
+    combinations, not just every other house.  This is why 'p1' and 'p2' 
+    include the effects of the decision tree choices that led up to them.
+    'p1' and 'p2' are each an amalgamation of all prior decisions/combinations.
+
+     7: a     d
+     8: a     d   f
+     9: a     d     g
+    10: a       e
+    11: a       e   g
+    12: a         f
+    13: a           g
+    14:   b
+    15:   b   d
+    16:   b   d   f
+    17:   b   d     g
+    18:   b     e
+    19:   b     e   g
+    20:   b       f
+    21:   b         g
+    22:     c
+    23:     c   e
+    24:     c   e   g
+    25:     c     f
+    26:     c       g
+    27:       d
+    28:       d    f
+    29:       d      g
+    30:         e
+    31:         e    g
+    32:           f
+    33:              g
+"""
+class Solution6_OptimizedDP:
+    def rob(self, A: List[int]) -> int:
+        p1, p2 = 0, 0
+        for n in A:
+            p1, p2 = max(p2 + n, p1), p1
+        return p1
 
 def test1(solution):
     nums = [1,2,3,1]
@@ -397,53 +481,62 @@ if "__main__" == __name__:
     test1(Solution3_OptimizedDP())
     test1(Solution4_OptimizedDP())
     test1(Solution5_OptimizedDP())
+    test1(Solution6_OptimizedDP())
 
     test2(Solution1_BruteForce())
     test2(Solution2_BruteForceDP())
     test2(Solution3_OptimizedDP())
     test2(Solution4_OptimizedDP())
     test2(Solution5_OptimizedDP())
+    test2(Solution6_OptimizedDP())
 
     #test3(Solution1_BruteForce())
     test3(Solution2_BruteForceDP())
     test3(Solution3_OptimizedDP())
     test3(Solution4_OptimizedDP())
     test3(Solution5_OptimizedDP())
+    test3(Solution6_OptimizedDP())
 
     test4(Solution1_BruteForce())
     test4(Solution2_BruteForceDP())
     test4(Solution3_OptimizedDP())
     test4(Solution4_OptimizedDP())
     test4(Solution5_OptimizedDP())
+    test4(Solution6_OptimizedDP())
 
     test5(Solution1_BruteForce())
     test5(Solution2_BruteForceDP())
     test5(Solution3_OptimizedDP())
     test5(Solution4_OptimizedDP())
     test5(Solution5_OptimizedDP())
+    test5(Solution6_OptimizedDP())
 
     test100(Solution1_BruteForce())
     test100(Solution2_BruteForceDP())
     test100(Solution3_OptimizedDP())
     test100(Solution4_OptimizedDP())
     test100(Solution5_OptimizedDP())
+    test100(Solution6_OptimizedDP())
 
     test101(Solution1_BruteForce())
     test101(Solution2_BruteForceDP())
     test101(Solution3_OptimizedDP())
     test101(Solution4_OptimizedDP())
     test101(Solution5_OptimizedDP())
+    test101(Solution6_OptimizedDP())
 
     test102(Solution1_BruteForce())
     test102(Solution2_BruteForceDP())
     test102(Solution3_OptimizedDP())
     test102(Solution4_OptimizedDP())
     test102(Solution5_OptimizedDP())
+    test102(Solution6_OptimizedDP())
 
     test103(Solution1_BruteForce())
     test103(Solution2_BruteForceDP())
     test103(Solution3_OptimizedDP())
     test103(Solution4_OptimizedDP())
     test103(Solution5_OptimizedDP())
+    test103(Solution6_OptimizedDP())
 
 # End of "solution.py".
