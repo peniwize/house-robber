@@ -25,142 +25,10 @@ from typing import Set
 """
 
 """
-    Brute force solution: max sum of all combinations with non-adjacent elements.
+    Brute force solution.
 
-    a b c d e f
-    -----------
-    a            = a
-    a   c        = a+c
-    a   c   e    = a+c+e
-    a   c     f  = a+c+f
-    a     d      = a+d
-    a     d   f  = a+d+f
-    a       e    = a+e
-    a         f  = a+f
+    Return the max sum of all combinations with non-adjacent elements:
 
-        b          = b
-        b   d      = b+d
-        b   d   f  = b+d+f
-        b     e    = b+e
-        b       f  = b+f
-
-        c        = c
-        c   e    = c+e
-        c     f  = c+f
-
-            d      = d
-            d   f  = d+f
-
-            e    = e
-
-                f  = f
-
-    Decision tree for all combinations in [five] choices {a, b, c, d, e}:
-                                                    $
-                            ∅                                               a
-                ∅                       b                       ∅                       b
-        ∅           c           ∅           c           ∅           c           ∅           c
-        ∅     d     ∅     d     ∅     d     ∅     d     ∅     d     ∅     d     ∅     d     ∅     d
-    ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e   ∅ e
-    ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓   ↓ ↓
-    ∅ e   d d   c c     c   b b   b b   b b   b b   a a   a a   a a   a a   a a   a a   a a   a a
-            e     e     d     e   d d   c c   c c     e   d d   c c   c c   b b   b b   b b   b b
-                        e           e     e   d d           e     e   d d     e   d d   c c   c c
-                                                e                       e           e     e   d d
-                                                                                                e
-
-    The total number of PATHS to leaf nodes in the decision tree is 2**n, 
-    where n is the number of choices, which is 2**5 = 32.  This is the number of 
-    unique combinations (not permutations) that can be produced from the choices.
-
-    This problem, however, does not produce ALL possible combinations because adjacent 
-    houses (choices) cannot be considered.
-    
-    Time = Somewhere between O(2**(n/2)) and O(2**n).
-            The algorithm is exponential and dependent on 'n'.  It will certainly run
-            in less time than O(2**n) because a level of the decision tree is omitted
-            by 'i + 2' passed to '__helper()' and it will certainly run in more time
-            than O(2**(n/2)).  I'm not sure exactly how to calculate the precise base
-            since '2' (in 2**n) is too large.
-
-    Space = O(n/2) => O(n)  [call stack]
-"""
-class Solution1_BruteForce:
-    def rob(self, nums: List[int]) -> int:
-        def __helper(nums: List[int], startIdx: int = 0, sum: int = 0, maxSum: int = 0) -> int:
-            if len(nums) <= startIdx:
-                return max(maxSum, sum)
-            for i in range(startIdx, len(nums)):
-                sum += nums[i]
-                maxSum = __helper(nums, i + 2, sum, maxSum)
-                sum -= nums[i]
-            return maxSum
-        return __helper(nums)
-
-"""
-    Dynamic programming solution.
-
-    This is a recursive brute force solution that uses a cache to avoid
-    redundantly reprocessing the same sub-tree more than once.  However, 
-    the root of the sub-tree is still visited.
-
-    Time = O(n)
-           Due to the sums cache (memoization), each node is visited only once,
-           which prunes off all combination tree branches except one.
-
-    Space = O(n + n/2) => O(n + n) => O(2n) => O(n)
-            Term 1 (n): the sums cache, which may contain one value for each sub-tree.
-            Term 2 (n/2): the maximum call stack depth.
-"""
-class Solution2_BruteForceDP:
-    def rob(self, nums: List[int]) -> int:
-        if not nums: return 0
-
-        N = len(nums)        
-        sums = {}
-
-        def __nodeMaxSum(numsIdx: int = 0) -> int:
-            if N <= numsIdx: return 0
-            maxSum = 0
-            for i in range(numsIdx, N):
-                if i in sums:
-                    sum = sums[i]
-                else:
-                    sum = nums[i] + __nodeMaxSum(i + 2)
-                    sums[i] = sum
-                maxSum = max(maxSum, sum)
-            return maxSum
-        
-        return __nodeMaxSum()
-
-"""
-    Dynamic programming solution.
-
-    Time = O(n - 2) => O(n)
-
-    Space = O(n)
-"""
-class Solution3_OptimizedDP:
-    def rob(self, nums: List[int]) -> int:
-        if not nums: return 0
-        
-        N = len(nums)
-        
-        if 0 == N: return 0
-        if 1 == N: return nums[0]
-        if 2 == N: return max(nums[0], nums[1])
-
-        A = nums
-        S = [0] * N
-        S[N - 1] = A[N - 1]
-        S[N - 2] = A[N - 2]
-        S[N - 3] = A[N - 3] + A[N - 1]
-        for i in range(N - 4, -1, -1):
-            S[i] = A[i] + max(S[i + 2], S[i + 3])
-
-        return max(S[0], S[1])
-
-"""
     This problem is solved by calculating every combination of houses that
     does not have any adjacent houses.  For example, consider a street with
     seven houses: {a,b,c,d,e,f,g}.  The decision tree that produces all
@@ -189,11 +57,12 @@ class Solution3_OptimizedDP:
     Notice that sub-trees 'a' and 'b' both contain all other sub-trees and,
     similarly, all sub-trees are composites that contain all other sub-trees
     all the way to the base cases: 'f' and 'g'.
-    The reason why onlt sub-trees 'a' and 'b' are modeled is because this 
+    The reason why only sub-trees 'a' and 'b' are modeled is because this 
     combination algorithm skips adjacent elements (houses) and both trees 
     must be modeled to show ALL nodes since neither tree 'a' nor tree 'b' 
-    contains the other.
-    Here are all combinations that are produced by these decision trees:
+    contains the other, however both contain all other sub-trees.
+
+    Here are all combinations that are produced by the decision tree above:
 
     {a b c d e f g}
     ---------------
@@ -204,16 +73,11 @@ class Solution3_OptimizedDP:
     a    c   e   g
     a    c     f
     a    c       g
+    a      d
     a      d   f
     a      d     g
     a        e
     a        e   g
-    a          f
-    a            g
-    a        e
-    a        e   g
-    a          f
-    a            g
     a          f
     a            g
       b
@@ -244,47 +108,159 @@ class Solution3_OptimizedDP:
     To solve this problem, the "max" value of each node must be calculated.
     The "max" value of a node is the node value + the max value of all of 
     the nodes children.  For example, the "max" value of any node is:
-        max_node = node_value + max(max_node for all children)
-    Which is recursive a recursive function that returns the "max" value of
-    a node to its parent node that adds it's value to this max value, which
-    produces the max value of the parent node, which it returns to its parent.
-    This continues until the root node is reached.  The answer to the problem
-    is the max value of the max values of 'a' and 'b'.
+        node_max = node_value + max(node_max for all children)
+    Which is a recursive function that returns the "max" value of a node to 
+    its parent node that in turn adds its value to this "max" value, which 
+    produces the "max" value of the parent node, which it returns to its 
+    parent.  This continues until the root node is reached.  The answer to 
+    the problem is the max value of the "max" values of 'a' and 'b'.
 
-    ((( Dynamic programming solution. )))
+    The total number of PATHS to leaf nodes in a decision tree that DOES
+    include adjacent houses is 2**n, where n is the number of choices 
+    (2**7 = 128 in the example).  This is the number of unique combinations 
+    (not permutations) that can be produced from the choices.
 
-    This solution uses only three variables to record/track sums 
-    rather than an array that records/tracks all sums.
-    (This solution is similar to the Fibonacci DP solution.)
-
-    Start with the last three elements and work your way backward to the 
-    first element (in nums).  For each element in nums (each element 
-    represents a node in the decision tree), calculate the MAX value of the 
-    decision tree NODE as the sum of the node value and the max of all child 
-    node MAX values.  Note that the SUM of each node and its children is not 
-    what is being calculated!
-
+    This problem, however, does not produce ALL possible combinations because 
+    adjacent houses (choices) are excluded.
     
->>> Under Construction <<<
+    Time = Somewhere between O(2**(n/2)) and O(2**n).
+            The algorithm is exponential and dependent on 'n'.  It will certainly run
+            in less time than O(2**n) because a level of the decision tree is omitted
+            by 'i + 2' passed to '__helper()' and it will certainly run in more time
+            than O(2**(n/2)).  I'm not sure exactly how to calculate the precise base
+            since '2' (in 2**n) is too large.
 
+    Space = O(n/2) => O(n)  [call stack]
+"""
+class Solution1_BruteForce:
+    def rob(self, nums: List[int]) -> int:
+        def __helper(nums: List[int], startIdx: int = 0, sum: int = 0, maxSum: int = 0) -> int:
+            if len(nums) <= startIdx:
+                return max(maxSum, sum)
+            for i in range(startIdx, len(nums)):
+                sum += nums[i]
+                maxSum = __helper(nums, i + 2, sum, maxSum)
+                sum -= nums[i]
+            return maxSum
+        return __helper(nums)
 
-    .  The sum values are calculated with the formula:
-        S[i] = max(A[i] + S[i + 2], S[i + 1])
-        where: A = nums array, S = sums array.
-    The final result is S[0].
+"""
+    Cached recursive [dynamic programming] solution.
 
-    This works because each sum depends on (includes) the subsequent sums,
-    similar to how each Fibonacci number depends on the previous two numbers.
-    The sums accumulate as the algorithm progresses.  Each sum in the sums 
-    array depends only on the subsequent TWO, therefore a sums _array_ is 
-    not needed, rather only TWO variables are required.  Let these variables
-    be 'a' and 'b'.  Initialze them to the last two values in nums.  Then 
-    calculate the next max value with:
-        tmp = max(A[i] + a, b)
-        b = a
-        a = tmp
-        where: A = nums array.
-    The final result is in variable 'a'.
+    This is a recursive brute force solution that uses a cache to avoid
+    redundantly reprocessing the same sub-tree more than once.  However, 
+    the root of the sub-tree is still visited.  This solution takes advantage 
+    of the fact the decision tree is composed of recurring identical 
+    subproblems.  Each element in the cache corresponds to an index into nums,
+    which represents a node in the decision tree.
+
+    See 'Solution1_OptimizedDP' for more explanation and context.
+    
+    Time = O(n)
+           Due to the cache cache (memoization), each node is only visited once,
+           which prunes off all combination [sub]tree branches except one.
+
+    Space = O(n + n/2) => O(n + n) => O(2n) => O(n)
+            Term 1 (n): the cache cache, which may contain one value for each sub-tree.
+            Term 2 (n/2): the maximum call stack depth.
+"""
+class Solution2_BruteForceDP:
+    def rob(self, nums: List[int]) -> int:
+        if not nums: return 0
+
+        N = len(nums)        
+        cache = {} # "nums" index to corresponding sub-tree node "max-value".
+
+        def __nodeMaxSum(numsIdx: int = 0) -> int:
+            if N <= numsIdx: return 0
+            maxSum = 0
+            for i in range(numsIdx, N):
+                if i in cache:
+                    sum = cache[i]
+                else:
+                    sum = nums[i] + __nodeMaxSum(i + 2)
+                    cache[i] = sum
+                maxSum = max(maxSum, sum)
+            return maxSum
+        
+        return __nodeMaxSum()
+
+""""
+    Iterative [dynamic programming] solution [S=O(n)].
+
+    This is an iterative (non-recursive) solution that takes advantage of 
+    the fact the decision tree is composed of recurring identical subproblems.
+    Each element in the cache is calculated as:
+        cache[i] = nums[i] + max(cache[i+2], cache[i+3])
+    The last two values (n - 1 and n - 2) in the cache are initialized to 
+    the last two values in nums because the last two values in nums are 
+    calculated as:
+        cache[n - 1] = nums[n - 1] + max(0, 0)
+        cache[n - 2] = nums[n - 2] + max(0, 0)
+
+    NOTE: Each element in nums represents a node in the decision tree.
+
+    Start with the last three elements (tree nodes) in nums and work your 
+    way backward to the first element (tree node) in nums.  For each element
+    (tree node) in nums, calculate the max-node-value of the node as the 
+    sum of the node value and the maximum of all its child max-node-values.
+    
+    NOTE: the SUM of each node and its children is not what is being 
+    calculated and stored in the cache.  Rather, it is the sum of the 
+    node value and the max-node-value of the previously calculated 
+    max-node-values of each of its children.
+
+    See 'Solution2_OptimizedDP' for more explanation and context.
+
+    Time = O(n - 2) => O(n)
+
+    Space = O(n)
+"""
+class Solution3_OptimizedDP:
+    def rob(self, nums: List[int]) -> int:
+        if not nums: return 0
+        
+        N = len(nums)
+        
+        if 0 == N: return 0
+        if 1 == N: return nums[0]
+        if 2 == N: return max(nums[0], nums[1])
+
+        # Work backward to simulate the return path of the recursive solution.
+        # This can be refactored to work forward because the combinations can
+        # be produced either from left to right or from right to left.
+        cache = [0] * N # "max-node-values"
+        cache[N - 1] = nums[N - 1]
+        cache[N - 2] = nums[N - 2]
+        cache[N - 3] = nums[N - 3] + nums[N - 1]
+        for i in range(N - 4, -1, -1):
+            cache[i] = nums[i] + max(cache[i + 2], cache[i + 3])
+
+        return max(cache[0], cache[1])
+
+"""
+    Iterative [dynamic programming] solution [S=O(1)].
+
+    This solution uses THREE variables to record/track max-node-values.
+    This solution differs from the cached brute force solution, which visits 
+    every leaf in the decision tree and calculates a unique sum for every 
+    decision tree branch.  This solution takes advantage of the fact the 
+    decision tree is composed of recurring identical subproblems and only the
+    solutions for the subsequent THREE sub-problems are required to solve any
+    sub-problem:
+        cache[i] = nums[i] = (cache[i - 2], cache[i - 3])
+        where: "cache[i]" contains the "max node value" for the [sub]tree node
+               corresponding to "nums[i]".
+    Rather than keeping a cache array with every previously calculated 
+    max-node-value, only three varables are kept in order to track the three
+    most recently computed max-node-values.  Each time a new value is 
+    calculated, all previous values are shifted through the variables 
+    (discarding the oldest) and the newly calculated value is stored in the 
+    appropriate variable.  A three element array could be used instead of 
+    three discrete variables, however it would probably be slower - 
+    especially in python.
+
+    See 'Solution3_OptimizedDP' for more explanation and context.
 
     Time = O(n)
 
@@ -300,13 +276,38 @@ class Solution4_OptimizedDP:
         if 1 == N: return A[0]
         if 2 == N: return max(A[0], A[1])
 
+        # Work backward to simulate the return path of the recursive solution.
+        # This can be refactored to work forward because the combinations can
+        # be produced either from left to right or from right to left.
         c = A[N - 1]
         b = A[N - 2]
         a = A[N - 3] + c
         for i in range(N - 4, -1, -1):
-            c = A[i] + max(b, c) # Use 'c' as tmp storage.
-            a,b,c = c,a,b
+            a, b, c = A[i] + max(b, c), a, b
 
+        return max(a, b)
+
+"""
+    Simplified iterative [dynamic programming] solution.
+
+    This is equivalent to the iterative solution that simulates the return path
+    of the recursive solution, except that this solution works FORWARD instead 
+    of backward and it eliminates superfluous tests for edge cases, which 
+    simplifies the code.  This also runs faster because the iteration loop is
+    as simple as possible (moving forward one value [not index] at a time),
+    which executes much faster in python (and C++).
+
+    See 'Solution4_OptimizedDP' for more explanation and context.
+
+    Time = O(n)
+
+    Space = O(1)
+"""
+class Solution5_OptimizedDP:
+    def rob(self, A: List[int]) -> int:
+        a, b, c = 0, 0, 0
+        for n in A:
+            a, b, c = n + max(b, c), a, b
         return max(a, b)
 
 def test1(solution):
@@ -395,45 +396,54 @@ if "__main__" == __name__:
     test1(Solution2_BruteForceDP())
     test1(Solution3_OptimizedDP())
     test1(Solution4_OptimizedDP())
+    test1(Solution5_OptimizedDP())
 
     test2(Solution1_BruteForce())
     test2(Solution2_BruteForceDP())
     test2(Solution3_OptimizedDP())
     test2(Solution4_OptimizedDP())
+    test2(Solution5_OptimizedDP())
 
     #test3(Solution1_BruteForce())
     test3(Solution2_BruteForceDP())
     test3(Solution3_OptimizedDP())
     test3(Solution4_OptimizedDP())
+    test3(Solution5_OptimizedDP())
 
     test4(Solution1_BruteForce())
     test4(Solution2_BruteForceDP())
     test4(Solution3_OptimizedDP())
     test4(Solution4_OptimizedDP())
+    test4(Solution5_OptimizedDP())
 
     test5(Solution1_BruteForce())
     test5(Solution2_BruteForceDP())
     test5(Solution3_OptimizedDP())
     test5(Solution4_OptimizedDP())
+    test5(Solution5_OptimizedDP())
 
     test100(Solution1_BruteForce())
     test100(Solution2_BruteForceDP())
     test100(Solution3_OptimizedDP())
     test100(Solution4_OptimizedDP())
+    test100(Solution5_OptimizedDP())
 
     test101(Solution1_BruteForce())
     test101(Solution2_BruteForceDP())
     test101(Solution3_OptimizedDP())
     test101(Solution4_OptimizedDP())
+    test101(Solution5_OptimizedDP())
 
     test102(Solution1_BruteForce())
     test102(Solution2_BruteForceDP())
     test102(Solution3_OptimizedDP())
     test102(Solution4_OptimizedDP())
+    test102(Solution5_OptimizedDP())
 
     test103(Solution1_BruteForce())
     test103(Solution2_BruteForceDP())
     test103(Solution3_OptimizedDP())
     test103(Solution4_OptimizedDP())
+    test103(Solution5_OptimizedDP())
 
 # End of "solution.py".
